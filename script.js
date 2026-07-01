@@ -1,6 +1,6 @@
 // Dynamic Configuration - Protected via Vercel Environment Variables
-const SUPABASE_URL = window.env?.SUPABASE_URL || 'https://hlzmugdzyorhbljpqslt.supabase.co';
-const SUPABASE_ANON_KEY = window.env?.SUPABASE_ANON_KEY || 'sb_publishable_56RJDPCv7klUhUEaOzfdlg_xz87Q2SV';
+const SUPABASE_URL = window.env?.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = window.env?.SUPABASE_ANON_KEY || '';
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
