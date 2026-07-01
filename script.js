@@ -1,6 +1,4 @@
 // Dynamic Configuration - Protected via Vercel Environment Variables
-const SUPABASE_URL = window.env?.SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = window.env?.SUPABASE_ANON_KEY || '';
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
@@ -52,19 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/production_leads`, {
+                const response = await fetch('/api/submit', {
                     method: 'POST',
                     headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         full_name: nameValue,
                         phone_number: fullPhoneNumber,
                         email: emailValue,
-                        service: serviceValue // Captured service choice perfectly
+                        service: serviceValue
                     })
                 });
 
