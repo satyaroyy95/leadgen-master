@@ -1,42 +1,59 @@
-// Supabase Configuration Credentials
+// Dynamic Configuration - Protected via Vercel Environment Variables
+const SUPABASE_URL = window.env?.SUPABASE_URL || 'https://hlzmugdzyorhbljpqslt.supabase.co';
+const SUPABASE_ANON_KEY = window.env?.SUPABASE_ANON_KEY || 'sb_publishable_56RJDPCv7klUhUEaOzfdlg_xz87Q2SV';
 
-const SUPABASE_URL = 'https://hlzmugdzyorhbljpqslt.supabase.co';
-
-const SUPABASE_ANON_KEY = 'sb_publishable_56RJDPCv7klUhUEaOzfdlg_xz87Q2SV';
-
-// Wait for the HTML page to fully load before running our code
 document.addEventListener('DOMContentLoaded', () => {
-    // Find our lead form on the page using its class or ID
     const form = document.querySelector('form');
 
     if (form) {
         form.addEventListener('submit', async (e) => {
-            // Prevent the standard browser page refresh on submit
             e.preventDefault();
 
-            // Grab the exact text values the user typed into the inputs
-            // (Note: Make sure your HTML input elements have name="name" and name="phone")
+            // 1. Grab form elements
             const nameInput = form.querySelector('input[name="name"]');
             const phoneInput = form.querySelector('input[name="phone"]');
+            const emailInput = form.querySelector('input[name="email"]');
+            const serviceSelect = form.querySelector('select[name="service"]');
             const submitButton = form.querySelector('button[type="submit"]');
 
-            if (!nameInput || !phoneInput) {
-                alert('Error: Make sure your HTML inputs have name="name" and name="phone" attributes!');
+            if (!nameInput || !phoneInput || !emailInput || !serviceSelect) {
+                alert('Error: Form structure missing required fields.');
                 return;
             }
 
-            const nameValue = nameInput.value;
-            const phoneValue = phoneInput.value;
+            // 2. Extract values
+            const nameValue = nameInput.value.trim();
+            const phoneValue = phoneInput.value.trim();
+            const emailValue = emailInput.value.trim();
+            const serviceValue = serviceSelect.value;
 
-            // Visual feedback: disable button while saving
+            // 3. Strict Front-End Validation Catch Rules
+            const phoneRegex = /^[0-9]{10}$/;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (!phoneRegex.test(phoneValue)) {
+                alert('Please enter a valid 10-digit phone number.');
+                phoneInput.focus();
+                return;
+            }
+
+            if (!emailRegex.test(emailValue)) {
+                alert('Please enter a valid email address with a domain extension (e.g., .com, .ca).');
+                emailInput.focus();
+                return;
+            }
+
+            // 4. Proceed with submission if validated
+            const fullPhoneNumber = `+1 ${phoneValue}`;
+
             if (submitButton) {
                 submitButton.disabled = true;
                 submitButton.innerText = 'Sending...';
             }
 
             try {
-                // Shoot the data straight to your Supabase REST API endpoint
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+                // TARGET CHANGED TO YOUR SECURE PRODUCTION TABLE
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/production_leads`, {
                     method: 'POST',
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
@@ -45,27 +62,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        name: nameValue,
-                        phone: phoneValue
+                        full_name: nameValue, // Matches your production SQL column name
+                        phone_number: fullPhoneNumber, // Matches your production SQL column name
+                        email: emailValue
                     })
                 });
 
                 if (response.ok) {
                     alert('Success! Lead saved to the database vault.');
-                    form.reset(); // Clear out the input fields
+                    form.reset();
                 } else {
                     const errorText = await response.text();
-                    console.error('Supabase Error details:', errorText);
-                    alert('Database rejected submission. Check console logs.');
+                    console.error('Supabase Error:', errorText);
+                    alert('Database rejected submission. Check logs.');
                 }
             } catch (err) {
                 console.error('Network error:', err);
-                alert('Connection failure. Check internet or API credentials.');
+                alert('Connection failure.');
             } finally {
-                // Reset button appearance
                 if (submitButton) {
                     submitButton.disabled = false;
-                    submitButton.innerText = 'Submit';
+                    submitButton.innerText = 'Request Free Quote';
                 }
             }
         });
