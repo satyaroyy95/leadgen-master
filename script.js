@@ -4,6 +4,7 @@ const SUPABASE_ANON_KEY = window.env?.SUPABASE_ANON_KEY || 'sb_publishable_56RJD
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
+    const successMsg = document.getElementById('success-message');
 
     if (form) {
         form.addEventListener('submit', async (e) => {
@@ -17,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitButton = form.querySelector('button[type="submit"]');
 
             if (!nameInput || !phoneInput || !emailInput || !serviceSelect) {
-                alert('Error: Form structure missing required fields.');
                 return;
             }
 
@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                // TARGET CHANGED TO YOUR SECURE PRODUCTION TABLE
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/production_leads`, {
                     method: 'POST',
                     headers: {
@@ -62,19 +61,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        full_name: nameValue, // Matches your production SQL column name
-                        phone_number: fullPhoneNumber, // Matches your production SQL column name
-                        email: emailValue
+                        full_name: nameValue,
+                        phone_number: fullPhoneNumber,
+                        email: emailValue,
+                        service: serviceValue // Captured service choice perfectly
                     })
                 });
 
                 if (response.ok) {
-                    alert('Success! Lead saved to the database vault.');
+                    // Show our beautiful design success message container
+                    if (successMsg) {
+                        successMsg.classList.remove('hidden');
+                    }
+                    // Reset the form fields automatically
                     form.reset();
                 } else {
                     const errorText = await response.text();
                     console.error('Supabase Error:', errorText);
-                    alert('Database rejected submission. Check logs.');
+                    alert('Database rejected submission. Check console logs.');
                 }
             } catch (err) {
                 console.error('Network error:', err);
